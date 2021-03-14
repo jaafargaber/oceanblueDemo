@@ -2,23 +2,24 @@ pipeline {
   agent any
   stages {
     stage('Build & Test') {
-           steps {
+      steps {
         bat 'mvn -Dmaven.test.failure.ignore clean package'
-        stash(name: 'build-test-artifacts', \
-        includes: '**/target/surefire-reports/TEST-*.xml,target/*.jar')
+        stash(name: 'build-test-artifacts', includes: '**/target/surefire-reports/TEST-*.xml,target/*.jar')
       }
     }
+
     stage('Report & Publish') {
       parallel {
         stage('Report & Publish') {
-            steps {
+          steps {
             unstash 'build-test-artifacts'
             junit '**/target/surefire-reports/TEST-*.xml'
             archiveArtifacts(onlyIfSuccessful: true, artifacts: 'target/*.jar')
           }
         }
+
         stage('Publish to Artifactory') {
-           steps {
+          steps {
             script {
               unstash 'build-test-artifacts'
 
@@ -36,7 +37,9 @@ pipeline {
 
           }
         }
+
       }
     }
+
   }
 }
